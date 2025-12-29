@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     // External elements
     [SerializeField] TicketCheckingScreenController TicketCheckingScreen; 
     [SerializeField] SpriteRenderer playerSprite;
+    [SerializeField] Animator playerAnimator;
     
     // Unity components
     Rigidbody2D playerRigidbody;
@@ -58,6 +59,10 @@ public class PlayerController : MonoBehaviour
             input.x = Input.GetAxisRaw("Horizontal");
             input.y = Input.GetAxisRaw("Vertical");
             input.Normalize();
+
+            // Set animation based on movement
+            playerAnimator.SetFloat("inputX", input.x);
+            playerAnimator.SetFloat("inputY", input.y);
 
             // Sprint while holding shift
             if(Input.GetKey(KeyCode.LeftShift)) { speedModifier = SprintSpeedModifier; }
