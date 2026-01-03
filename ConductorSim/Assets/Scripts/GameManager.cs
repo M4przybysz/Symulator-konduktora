@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour
     {
         public float SFXVolume;
         public float musicVolume;
-        public DateTime currentDateTime;
+        public long currentDateTime;
     }
 
     public static void SaveGameData()
@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
         // Set save data
         data.SFXVolume = SFXVolume;
         data.musicVolume = musicVolume;
-        data.currentDateTime = currentDateTime;
+        data.currentDateTime = currentDateTime.ToBinary();
 
         // Write json save file
         string json = JsonUtility.ToJson(data);
@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
             // Load save data
             SFXVolume = data.SFXVolume;
             musicVolume = data.musicVolume;
-            currentDateTime = data.currentDateTime;
+            currentDateTime = DateTime.FromBinary(data.currentDateTime);
         }
         else
         {
