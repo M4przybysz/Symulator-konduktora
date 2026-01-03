@@ -3,7 +3,7 @@ using UnityEngine;
 public class Train : MonoBehaviour
 {
     [SerializeField] Transform passengerCarsContainer;
-    TrainCar[] passengerCars;
+    public TrainCar[] passengerCars;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -24,5 +24,20 @@ public class Train : MonoBehaviour
     void Update()
     {
         
+    }
+
+    //=====================================================================================================
+    // Custom methods
+    //=====================================================================================================
+
+    public TrainCar FindTrainCar(int carNumber)
+    {
+        foreach(TrainCar car in passengerCars)
+        {
+            if(car.carNumber == carNumber) { return car; }
+        }
+
+        print($"Train car number {carNumber} not found");
+        return null;
     }
 }

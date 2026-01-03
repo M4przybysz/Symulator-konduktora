@@ -18,6 +18,9 @@ public class Passenger : MonoBehaviour
     static string[] maleFirstNames = {"Jakub", "Mateusz", "Kacper", "Michał", "Maciej", "Sebastian", "Patryk", "Dawid", "Daniel", "Kamil", "Piotr", "Szymon", "Paweł", "Bartosz", "Bartłomiej", "Damian", "Dominik", "Adrian", "Marcin", "Grzegorz", "Łukasz", "Krzysztof", "Tomasz", "Filip", "Adam", "Karol", "Mikołaj", "Krystian", "Hubert", "Konrad", "Wojciech", "Rafał", "Jan", "Przemysław", "Oskar", "Wiktor", "Arkadiusz", "Aleksander", "Artur", "Robert", "Radosław", "Marek", "Eryk", "Marcel", "Norbert", "Andrzej", "Mariusz", "Maksymilian", "Jacek", "Miłosz", "Dariusz", "Cezary", "Igor", "Błażej", "Gabriel", "Alan", "Stanisław", "Nikodem", "Gracjan", "Albert", "Antoni", "Fabian", "Tobiasz", "Sławomir", "Tymoteusz", "Franciszek", "Kajetan", "Remigiusz", "Kornel", "Julian", "Dorian", "Cyprian", "Witold", "Oliwier", "Beniamin", "Samuel", "Józef", "Tadeusz", "Gerard"};
     static string[] maleLastNames = {"Abramczyk", "Adamiec", "Aleksandrowicz", "Andrzejczak", "Bakuła", "Bober", "Bęben", "Białecki", "Boguszewski", "Borowski", "Brzeziński", "Cegliński", "Chmiel", "Cichy", "Cieśla", "Czech", "Czekalski", "Dąbrowski", "Dobosz", "Dobrzyński", "Domagała", "Fikus", "Frątczak", "Gałecki", "Gawron", "Gołąb", "Grabarz", "Grochowski", "Jabłoński", "Jagiełło", "Janowski", "Jaskólski", "Jaworski", "Kaczmarek", "Klimczuk", "Kmicic", "Kołodziej", "Kot", "Kowalski", "Krawczyk", "Kucharczyk", "Kwiatkowski", "Lewandowski", "Lipski", "Majewski", "Majchrzak", "Małek", "Mazur", "Młynarczyk", "Nowak", "Ochocki", "Okulski", "Orliński", "Ozorek", "Paliwoda", "Paprocki", "Piwowarczyk", "Pazura", "Piątek", "Piechota", "Puchała", "Raskolnikow", "Rogalski", "Rzecki", "Sarna", "Sienkiewicz", "Sikora", "Sławuta", "Stasiuk", "Stępień", "Suta", "Sołtys", "Śliwiński", "Tomczak", "Tyszka", "Walczak", "Wasik", "Wilk", "Wójcik", "Wróblewski", "Zawada", "Zięba", "Żmuda", "Żukowski", "Karpiński", "Wokulski", "Przybył", "Grys", "Kałasa",};
 
+    // Train reference
+    static Train train;
+
     // General variables
     [SerializeField] bool doNotGeneratePassenger = false;
     [SerializeField] PassengerData customPassengerData;
@@ -91,6 +94,8 @@ public class Passenger : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {   
+        train = GameObject.Find("Train").GetComponent<Train>();
+
         if (doNotGeneratePassenger) { SetCustomPassenger(); } 
         else { RandomizePassengerProfile(); }
     }
@@ -234,8 +239,36 @@ public class Passenger : MonoBehaviour
         date = date.AddDays(UnityEngine.Random.Range(-6, 1));
         ticketData.kasaWydania = TicketData.kasyWydania[ticketData.stacjaOd] + date.ToString("dd.MM.yyyy");
 
-        // Randomize class
-        ticketData.klasa = UnityEngine.Random.Range(1, 3).ToString();
+        // Sarch for a free seat 
+        bool isSeatFound = false;
+        do
+        {
+            // Randomize class
+            ticketData.klasa = UnityEngine.Random.Range(1, 3).ToString();
+
+            // Calculate ticket car number and seat number
+            if(ticketData.klasa == "1")
+            {
+                ticketData.carNumber = UnityEngine.Random.Range(1, 3); // 2 cars for the first class
+                ticketData.seatNumber = UnityEngine.Random.Range(1, 7) + 10 * UnityEngine.Random.Range(0, 5);
+            }
+            else
+            {
+                ticketData.carNumber = UnityEngine.Random.Range(4, 7); // 3 cars for the second class
+                ticketData.seatNumber = UnityEngine.Random.Range(1, 9) + 10 * UnityEngine.Random.Range(0, 5);
+            }
+
+            // Check if seat is not taken and take it if it's free
+            PassengerSeat chosenSeat = train.FindTrainCar(ticketData.carNumber).FindSeat(ticketData.seatNumber);
+            if(chosenSeat != null && !chosenSeat.isTaken) 
+            { 
+                transform.position = chosenSeat.seatPosition;
+                chosenSeat.isTaken = true;
+                print(train.FindTrainCar(ticketData.carNumber).FindSeat(ticketData.seatNumber).isTaken);
+                isSeatFound = true; 
+            }
+        } 
+        while(!isSeatFound);
 
         // Randomize tariff
         if (ticketData.klasa == "2")
@@ -271,18 +304,6 @@ public class Passenger : MonoBehaviour
             price *= 1 + TicketData.PTUPriceModifier;
 
             ticketData.cena = Math.Round(price, 2).ToString() + " zł";
-        }
-
-        // Calculate ticket car number and seat number
-        if(ticketData.klasa == "1")
-        {
-            ticketData.carNumber = UnityEngine.Random.Range(1, 3); // 2 cars for the first class
-            ticketData.seatNumber = UnityEngine.Random.Range(1, 7) + 10 * UnityEngine.Random.Range(0, 5);
-        }
-        else
-        {
-            ticketData.carNumber = UnityEngine.Random.Range(4, 7); // 3 cars for the second class
-            ticketData.seatNumber = UnityEngine.Random.Range(1, 9) + 10 * UnityEngine.Random.Range(0, 5);
         }
 
         // Create a ticket series and number

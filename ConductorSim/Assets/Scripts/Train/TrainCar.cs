@@ -20,4 +20,19 @@ public class TrainCar : MonoBehaviour
         }
         print(debugInfo);
     }
+
+    //=====================================================================================================
+    // Custom methods
+    //=====================================================================================================
+
+    public PassengerSeat FindSeat(int seatNumber)
+    {
+        foreach(PassengerSeat seat in passengerSeats)
+        {
+            if(seat.seatNumber == seatNumber) { return seat; }
+        }
+
+        print($"Seat number {seatNumber} not found in car number {carNumber}");
+        return null;
+    }
 }
